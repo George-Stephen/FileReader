@@ -3,47 +3,52 @@ package org.infinity.classes;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.PreparedStatement;
-import java.text.SimpleDateFormat;
+import java.util.List;
+
+import static org.infinity.classes.DatabaseConnection.tableExists;
 
 public class TSVReader {
-    public static void readAndStoreCSEData(String filepath) throws Exception{
+    public static void readAndStoreCSEData(String filepath) {
         try (BufferedReader br = new BufferedReader(new FileReader(filepath));
              Connection connection = DatabaseConnection.getConnection()){
             String line;
-            String currentRecordType = null;
-
+            boolean isFirstLine = true; // Flag to ignore the first line
 
             while ((line = br.readLine()) != null){
-              String[] data  = line.split("\t");
-                switch (data[0]) {
+                if (isFirstLine) {
+                    isFirstLine = false;
+                    continue; // Skip processing the first line
+                }
+
+              List<String> data  = List.of(line.split("\t"));
+                switch (data.get(0)) {
                     case "FH" -> {
 
-                        if (data.length != 5) {
-                            continue;
+                        String recordTypeID = data.get(0);
+                        String bankIdentifier = data.get(1);
+                        String fileSequentialNumber = data.get(2);
+                        String fileCreationDateStr = data.get(3);
+
+                        String DropTable = "DROP TABLE IF EXISTS CSE_FH_Table";
+                        connection.createStatement().execute(DropTable);
+
+
+
+                        if (!tableExists(connection,"CSE_FH_Table")){
+                            String query = "CREATE TABLE CSE_FH_Table (id SERIAL PRIMARY KEY, recordTypeID VARCHAR(255), bankIdentifier VARCHAR(255), fileSequentialNumber VARCHAR(255), fileCreationDate VARCHAR(255))";
+                            connection.createStatement().execute(query);
+                            System.out.println("Table 'CSE_FH_Table' created successfully.");
+                        }else{
+                            System.out.println("Table 'ATRTable' already exists.");
                         }
 
-                        String recordTypeID = data[1];
-                        String bankIdentifier = data[2];
-                        int fileSequentialNumber = Integer.parseInt(data[3]);
-                        String fileCreationDateStr = data[4];
-
-                        Date fileCreationDate = null;
-                        try {
-                            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
-                            java.util.Date parsedDate = dateFormat.parse(fileCreationDateStr);
-                            fileCreationDate = new Date(parsedDate.getTime());
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            continue;
-                        }
                         String query = "INSERT INTO CSE_FH_Table (recordTypeID, bankIdentifier, fileSequentialNumber, fileCreationDate) VALUES (?, ?, ?, ?)";
                         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                             preparedStatement.setString(1, recordTypeID);
                             preparedStatement.setString(2, bankIdentifier);
-                            preparedStatement.setInt(3, fileSequentialNumber);
-                            preparedStatement.setDate(4, fileCreationDate);
+                            preparedStatement.setString(3, fileSequentialNumber);
+                            preparedStatement.setString(4, fileCreationDateStr);
                             preparedStatement.executeUpdate();
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -51,27 +56,34 @@ public class TSVReader {
 
                     }
                     case "FT" -> {
-                        currentRecordType = "FT";
 
-                        if (data.length != 5) {
-                            // Handle the error, skip the line, or throw an exception
-                            continue;
+
+                        String recordTypeID = data.get(0);
+                        String bankIdentifier = data.get(1);
+                        String fileSequentialNumber = data.get(2);
+                        String fileCreationDateStr = data.get(3);
+                        String recordsCounter = data.get(4);
+
+                        String DropTable = "DROP TABLE IF EXISTS CSE_FT_Table";
+                        connection.createStatement().execute(DropTable);
+
+
+                        if (!tableExists(connection,"CSE_FT_Table")){
+                            String query = "CREATE TABLE CSE_FT_Table (id SERIAL PRIMARY KEY, recordTypeID VARCHAR(255), bankIdentifier VARCHAR(255), fileSequentialNumber VARCHAR(255), fileCreationDate VARCHAR(255), recordsCounter VARCHAR(255))";
+                            connection.createStatement().execute(query);
+                            System.out.println("Table 'CSE_FT_Table' created successfully.");
+
                         }
-
-                        String recordTypeID = data[1];
-                        String bankIdentifier = data[2];
-                        int fileSequentialNumber = Integer.parseInt(data[3]);
-                        String fileCreationDateStr = data[4];
-                        int recordsCounter = Integer.parseInt(data[5]);
 
                         String query = "INSERT INTO CSE_FT_Table (recordTypeID, bankIdentifier, fileSequentialNumber, fileCreationDate, recordsCounter) VALUES (?, ?, ?, ?, ?)";
                         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                             preparedStatement.setString(1, recordTypeID);
                             preparedStatement.setString(2, bankIdentifier);
-                            preparedStatement.setInt(3, fileSequentialNumber);
+                            preparedStatement.setString(3, fileSequentialNumber);
                             preparedStatement.setString(4, fileCreationDateStr);
-                            preparedStatement.setInt(5, recordsCounter);
+                            preparedStatement.setString(5, recordsCounter);
                             preparedStatement.executeUpdate();
+                            System.out.println("Data inserted successfully");
                         } catch (Exception e) {
                             throw new RuntimeException(e);
                         }
@@ -79,60 +91,125 @@ public class TSVReader {
 
                     }
                     case "CL" -> {
-                        if (data.length != 51) {
+                        if (data.size() != 60) {
                             // Handle the error, skip the line, or throw an exception
                             continue;
                         }
-                        String recordTypeID = data[1];
-                        String clientID = data[2];
-                        String clientNumber = data[3];
-                        String orderDepartment = data[4];
-                        String clientType = data[5];
-                        String serviceGroup = data[6];
-                        String identificationDocumentNumber = data[7];
-                        String identificationDocumentType = data[8];
-                        String identificationDocumentDetails = data[9];
-                        String socialNumber = data[10];
-                        String taxpayerIdentifier = data[11];
-                        String taxPosition = data[12];
-                        String shortName = data[13];
-                        String title = data[14];
-                        String firstName = data[15];
-                        String lastName = data[16];
-                        String middleName = data[17];
-                        String secretPhase = data[18];
-                        String suffix = data[19];
-                        String countryCode = data[20];
-                        String citizenship = data[21];
-                        String language = data[22];
-                        String maritalStatus = data[23];
-                        String birthDate = data[24];
-                        String birthPlace = data[25];
-                        String birthName = data[27];
-                        String gender = data[28];
-                        String position = data[29];
-                        String companyName = data[30];
-                        String companyTradeName = data[31];
-                        String companyDepartment = data[32];
-                        String addressLine1 = data[33];
-                        String addressLine2 = data[34];
-                        String addressLine3 = data[35];
-                        String addressLine4 = data[36];
-                        String postalCode = data[37];
-                        String city = data[38];
-                        String state = data[39];
-                        String email = data[40];
-                        String phoneNumberMobile = data[41];
-                        String phoneNumberWork = data[42];
-                        String phoneNumberHome = data[43];
-                        String fax = data[44];
-                        String faxHome = data[45];
-                        String embossedTitle = data[46];
-                        String embossedFirstName = data[47];
-                        String embossedLastName = data[48];
-                        String embossedCompanyName = data[49];
-                        String amendmentDate = data[50];
-                        String amendmentOfficer = data[51];
+                        String recordTypeID = data.get(0);
+                        String clientID = data.get(1);
+                        String clientNumber = data.get(2);
+                        String orderDepartment = data.get(3);
+                        String clientType = data.get(4);
+                        String serviceGroup = data.get(5);
+                        String identificationDocumentNumber = data.get(6);
+                        String identificationDocumentType = data.get(7);
+                        String identificationDocumentDetails = data.get(8);
+                        String socialNumber = data.get(9);
+                        String taxpayerIdentifier = data.get(10);
+                        String taxPosition = data.get(11);
+                        String shortName = data.get(12);
+                        String title = data.get(13);
+                        String firstName = data.get(14);
+                        String lastName = data.get(15);
+                        String middleName = data.get(16);
+                        String secretPhase = data.get(17);
+                        String suffix = data.get(18);
+                        String countryCode = data.get(19);
+                        String citizenship = data.get(20);
+                        String language = data.get(21);
+                        String maritalStatus = data.get(22);
+                        String birthDate = data.get(23);
+                        String birthPlace = data.get(24);
+                        String birthName = data.get(25);
+                        String gender = data.get(26);
+                        String position = data.get(27);
+                        String companyName = data.get(28);
+                        String companyTradeName = data.get(29);
+                        String companyDepartment = data.get(30);
+                        String addressLine1 = data.get(31);
+                        String addressLine2 = data.get(32);
+                        String addressLine3 = data.get(33);
+                        String addressLine4 = data.get(34);
+                        String postalCode = data.get(35);
+                        String city = data.get(36);
+                        String state = data.get(37);
+                        String email = data.get(38);
+                        String phoneNumberMobile = data.get(39);
+                        String phoneNumberWork = data.get(40);
+                        String phoneNumberHome = data.get(41);
+                        String fax = data.get(42);
+                        String faxHome = data.get(43);
+                        String embossedTitle = data.get(44);
+                        String embossedFirstName = data.get(45);
+                        String embossedLastName = data.get(46);
+                        String embossedCompanyName = data.get(47);
+                        String amendmentDate = data.get(48);
+                        String amendmentOfficer = data.get(49);
+
+                        String DropTable = "DROP TABLE IF EXISTS CSE_CL_Table";
+                        connection.createStatement().execute(DropTable);
+
+
+                        if (!tableExists(connection,"CSE_CL_Table")){
+                            String query = "CREATE TABLE IF NOT EXISTS CSE_CL_Table (" +
+                                    "recordTypeID VARCHAR(2) NOT NULL," +
+                                    "clientID VARCHAR(32)," +
+                                    "clientNumber VARCHAR(32) NOT NULL," +
+                                    "orderDepartment VARCHAR(32)," +
+                                    "clientType VARCHAR(5)," +
+                                    "serviceGroup VARCHAR(32)," +
+                                    "identificationDocumentNumber VARCHAR(32)," +
+                                    "identificationDocumentType VARCHAR(32)," +
+                                    "identificationDocumentDetails VARCHAR(255)," +
+                                    "socialNumber VARCHAR(32)," +
+                                    "taxpayerIdentifier VARCHAR(32)," +
+                                    "taxPosition VARCHAR(32)," +
+                                    "shortName VARCHAR(255)," +
+                                    "title VARCHAR(32)," +
+                                    "firstName VARCHAR(255)," +
+                                    "lastName VARCHAR(255)," +
+                                    "middleName VARCHAR(255)," +
+                                    "secretPhrase VARCHAR(255)," +
+                                    "suffix VARCHAR(32)," +
+                                    "countryCode VARCHAR(3)," +
+                                    "citizenship VARCHAR(3)," +
+                                    "language VARCHAR(3)," +
+                                    "maritalStatus VARCHAR(3)," +
+                                    "birthDate VARCHAR(255)," +
+                                    "birthPlace VARCHAR(255)," +
+                                    "birthName VARCHAR(255)," +
+                                    "gender ENUM('M', 'F', 'N')," +
+                                    "position VARCHAR(32)," +
+                                    "companyName VARCHAR(255)," +
+                                    "companyTradeName VARCHAR(255)," +
+                                    "companyDepartment VARCHAR(255)," +
+                                    "addressLine1 VARCHAR(255)," +
+                                    "addressLine2 VARCHAR(255)," +
+                                    "addressLine3 VARCHAR(255)," +
+                                    "addressLine4 VARCHAR(255)," +
+                                    "postalCode VARCHAR(32)," +
+                                    "city VARCHAR(255)," +
+                                    "state VARCHAR(32)," +
+                                    "email VARCHAR(255)," +
+                                    "phoneNumberMobile VARCHAR(32)," +
+                                    "phoneNumberWork VARCHAR(32)," +
+                                    "phoneNumberHome VARCHAR(32)," +
+                                    "fax VARCHAR(32)," +
+                                    "faxHome VARCHAR(32)," +
+                                    "embossedTitle VARCHAR(26)," +
+                                    "embossedFirstName VARCHAR(255)," +
+                                    "embossedLastName VARCHAR(255)," +
+                                    "embossedCompanyName VARCHAR(26)," +
+                                    "amendmentDate TIMESTAMP," +
+                                    "amendmentOfficer VARCHAR(255)," +
+                                    "PRIMARY KEY (clientNumber)" +
+                                    ")";
+                            connection.createStatement().execute(query);
+                            System.out.println("Table 'CSE_CL_Table' created successfully.");
+
+                        }else{
+                            System.out.println("Table 'ATRTable' already exists.");
+                        }
 
                         String query = "INSERT INTO CSE_CL_Table (recordTypeID, clientID, clientNumber, orderDepartment, clientType, serviceGroup," +
                                 " identificationDocumentNumber, identificationDocumentType, identificationDocumentDetails, socialNumber," +
@@ -201,30 +278,37 @@ public class TSVReader {
 
                     }
                     case "AC" -> {
-                        if (data.length != 21) {
-                            // Handle the error, skip the line, or throw an exception
-                            continue;
+                        String recordTypeID = data.get(0);
+                        String accountContractID = data.get(1);
+                        String accountContractNumber = data.get(2);
+                        String accountCBSNumber = data.get(3);
+                        String parentAccountContractID = data.get(4);
+                        String parentAccountContractNumber = data.get(5);
+                        String parentAccountCBSNumber = data.get(6);
+                        String accountOwnerClientID = data.get(7);
+                        String accountOwnerClientNumber = data.get(8);
+                        String contractName = data.get(9);
+                        String dateOpen = data.get(10);
+                        String dateExpiry = data.get(11);
+                        String currency = data.get(12);
+                        String productCode = data.get(13);
+                        String contractSubtypeCode = data.get(14);
+                        String accountStatus = data.get(15);
+                        String accountBalances = data.get(16);
+                        String accountClassifiers = data.get(17);
+                        String amendmentDate = data.get(19);
+                        String amendmentOfficer = data.get(19);
+
+                        String DropTable = "DROP TABLE IF EXISTS CSE_AC_Table";
+                        connection.createStatement().execute(DropTable);
+
+                        if (!tableExists(connection,"CSE_AC_Table")) {
+                            String query = "CREATE TABLE CSE_AC_Table (id SERIAL PRIMARY KEY, recordTypeID VARCHAR(255), accountContractID VARCHAR(255), accountContractNumber VARCHAR(255), accountCBSNumber VARCHAR(255), parentAccountContractID VARCHAR(255), parentAccountContractNumber VARCHAR(255), parentAccountCBSNumber VARCHAR(255), accountOwnerClientID VARCHAR(255), accountOwnerClientNumber VARCHAR(255), contractName VARCHAR(50), dateOpen VARCHAR(255), dateExpiry VARCHAR(255), currency VARCHAR(255), productCode VARCHAR(255), contractSubtypeCode VARCHAR(255), accountStatus VARCHAR(255), accountBalances VARCHAR(255), accountClassifiers VARCHAR(255), amendmentDate VARCHAR(255), amendmentOfficer VARCHAR(255))";
+                            connection.createStatement().execute(query);
+                            System.out.println("Table 'CSE_AC_Table' created successfully.");
+                        }else{
+                            System.out.println("Table 'ATRTable' already exists.");
                         }
-                        String recordTypeID = data[1];
-                        String accountContractID = data[2];
-                        String accountContractNumber = data[3];
-                        String accountCBSNumber = data[4];
-                        String parentAccountContractID = data[5];
-                        String parentAccountContractNumber = data[6];
-                        String parentAccountCBSNumber = data[7];
-                        String accountOwnerClientID = data[8];
-                        String accountOwnerClientNumber = data[9];
-                        String contractName = data[10];
-                        Date dateOpen = Date.valueOf(data[11]);
-                        Date dateExpiry = Date.valueOf(data[12]);
-                        String currency = data[13];
-                        String productCode = data[14];
-                        String contractSubtypeCode = data[15];
-                        String accountStatus = data[16];
-                        String accountBalances = data[17];
-                        String accountClassifiers = data[18];
-                        Date amendmentDate = Date.valueOf(data[19]);
-                        String amendmentOfficer = data[20];
 
                         String query = "INSERT INTO CSE_AC_Table (recordTypeID, accountContractID, accountContractNumber, accountCBSNumber, parentAccountContractID, parentAccountContractNumber, parentAccountCBSNumber, accountOwnerClientID, accountOwnerClientNumber, contractName, dateOpen, dateExpiry, currency, productCode, contractSubtypeCode, accountStatus, accountBalances, accountClassifiers, amendmentDate, amendmentOfficer) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
@@ -238,15 +322,15 @@ public class TSVReader {
                             preparedStatement.setString(8, accountOwnerClientID);
                             preparedStatement.setString(9, accountOwnerClientNumber);
                             preparedStatement.setString(10, contractName);
-                            preparedStatement.setDate(11, dateOpen);
-                            preparedStatement.setDate(12, dateExpiry);
+                            preparedStatement.setString(11, dateOpen);
+                            preparedStatement.setString(12, dateExpiry);
                             preparedStatement.setString(13, currency);
                             preparedStatement.setString(14, productCode);
                             preparedStatement.setString(15, contractSubtypeCode);
                             preparedStatement.setString(16, accountStatus);
                             preparedStatement.setString(17, accountBalances);
                             preparedStatement.setString(18, accountClassifiers);
-                            preparedStatement.setDate(19, amendmentDate);
+                            preparedStatement.setString(19, amendmentDate);
                             preparedStatement.setString(20, amendmentOfficer);
                             preparedStatement.executeUpdate();
                         } catch (Exception e) {
@@ -256,41 +340,51 @@ public class TSVReader {
 
                     }
                     case "CR" -> {
-                        currentRecordType = "CR";
 
-                        if (data.length != 26) {
-                            // Handle the error, skip the line, or throw an exception
-                            continue;
-                        }
+//                        if (data.length != 26) {
+//                            // Handle the error, skip the line, or throw an exception
+//                            continue;
+//                        }
                         // Extract data from the CR record
-                        String recordTypeID = data[1];
-                        String cardContractID = data[2];
-                        String cardContractNumber = data[3];
-                        String cardCBSNumber = data[4];
-                        String accountContractID = data[5];
-                        String accountContractNumber = data[6];
-                        String accountCBSNumber = data[7];
-                        String cardholderClientID = data[8];
-                        String cardholderClientNumber = data[9];
-                        String accountOwnerClientID = data[10];
-                        String accountOwnerClientNumber = data[11];
-                        String contractName = data[12];
-                        Date dateOpen = Date.valueOf(data[13]);
-                        String cardExpiryDate = data[14];
-                        String currency = data[15];
-                        String productCode = data[16];
-                        String contractSubtypeCode = data[17];
-                        String cardStatus = data[18];
-                        String productionCode = data[19];
-                        String embossedTitle = data[20];
-                        String embossedFirstName = data[21];
-                        String embossedLastName = data[22];
-                        String embossedCompanyName = data[23];
-                        Date amendmentDate = Date.valueOf(data[24]);
-                        String amendmentOfficer = data[25];
+                        String recordTypeID = data.get(0);
+                        String cardContractID = data.get(1);
+                        String cardContractNumber = data.get(2);
+                        String cardCBSNumber = data.get(3);
+                        String accountContractID = data.get(4);
+                        String accountContractNumber = data.get(5);
+                        String accountCBSNumber = data.get(6);
+                        String cardholderClientID = data.get(7);
+                        String cardholderClientNumber = data.get(8);
+                        String accountOwnerClientID = data.get(9);
+                        String accountOwnerClientNumber = data.get(10);
+                        String contractName = data.get(11);
+                        String dateOpen = data.get(12);
+                        String cardExpiryDate = data.get(13);
+                        String currency = data.get(14);
+                        String productCode = data.get(15);
+                        String contractSubtypeCode = data.get(16);
+                        String cardStatus = data.get(17);
+                        String productionCode = data.get(18);
+                        String embossedTitle = data.get(19);
+                        String embossedFirstName = data.get(20);
+                        String embossedLastName = data.get(21);
+                        String embossedCompanyName = data.get(22);
+                        String amendmentDate = data.get(23);
+                        String amendmentOfficer = data.get(24);
+
+                        String DropTable = "DROP TABLE IF EXISTS CSE_CR_Table";
+                        connection.createStatement().execute(DropTable);
+
+                        if (!tableExists(connection,"CSE_CR_Table")){
+                            String query = "CREATE TABLE CSE_CR_Table (id SERIAL PRIMARY KEY, recordTypeID VARCHAR(255), cardContractID VARCHAR(255), cardContractNumber VARCHAR(255), cardCBSNumber VARCHAR(255), accountContractID VARCHAR(255), accountContractNumber VARCHAR(255), accountCBSNumber VARCHAR(255), cardholderClientID VARCHAR(255), cardholderClientNumber VARCHAR(255), accountOwnerClientID VARCHAR(255), accountOwnerClientNumber VARCHAR(255), contractName VARCHAR(255), dateOpen VARCHAR(255), cardExpiryDate VARCHAR(255), currency VARCHAR(255), productCode VARCHAR(255), contractSubtypeCode VARCHAR(255), cardStatus VARCHAR(255), productionCode VARCHAR(255), embossedTitle VARCHAR(255), embossedFirstName VARCHAR(255), embossedLastName VARCHAR(255), embossedCompanyName VARCHAR(255), amendmentDate VARCHAR(255), amendmentOfficer VARCHAR(255))";
+                            connection.createStatement().execute(query);
+                            System.out.println("Table 'CSE_CR_Table' created successfully.");
+                        }else{
+                            System.out.println("Table 'ATRTable' already exists.");
+                        }
 
 
-                        String query = "INSERT INTO CSE_CR_Table (recordTypeID, cardContractID, cardContractNumber, cardCBSNumber, accountContractID, accountContractNumber, accountCBSNumber, cardholderClientID, cardholderClientNumber, accountOwnerClientID, accountOwnerClientNumber, contractName, dateOpen, cardExpiryDate, currency, productCode, contractSubtypeCode, cardStatus, productionCode, embossedTitle, embossedFirstName, embossedLastName, embossedCompanyName, amendmentDate, amendmentOfficer) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                        String query = "INSERT INTO CSE_CR_Table (recordTypeID, cardContractID, cardContractNumber, cardCBSNumber, accountContractID, accountContractNumber, accountCBSNumber, cardholderClientID, cardholderClientNumber, accountOwnerClientID, accountOwnerClientNumber, contractName, dateOpen, cardExpiryDate, currency, productCode, contractSubtypeCode, cardStatus, productionCode, embossedTitle, embossedFirstName, embossedLastName, embossedCompanyName, amendmentDate, amendmentOfficer) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                             preparedStatement.setString(1, recordTypeID);
                             preparedStatement.setString(2, cardContractID);
@@ -304,7 +398,7 @@ public class TSVReader {
                             preparedStatement.setString(10, accountOwnerClientID);
                             preparedStatement.setString(11, accountOwnerClientNumber);
                             preparedStatement.setString(12, contractName);
-                            preparedStatement.setDate(13, dateOpen);
+                            preparedStatement.setString(13, dateOpen);
                             preparedStatement.setString(14, cardExpiryDate);
                             preparedStatement.setString(15, currency);
                             preparedStatement.setString(16, productCode);
@@ -315,32 +409,42 @@ public class TSVReader {
                             preparedStatement.setString(21, embossedFirstName);
                             preparedStatement.setString(22, embossedLastName);
                             preparedStatement.setString(23, embossedCompanyName);
-                            preparedStatement.setDate(24, amendmentDate);
+                            preparedStatement.setString(24, amendmentDate);
                             preparedStatement.setString(25, amendmentOfficer);
                             preparedStatement.executeUpdate();
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
+
                     }
                     case "CS" -> {
-                        currentRecordType = "CS";
 
-                        if (data.length != 10) {
-                            // Handle the error, skip the line, or throw an exception
-                            continue;
-                        }
+//                        if (data.length != 10) {
+//                            // Handle the error, skip the line, or throw an exception
+//                            continue;
+//                        }
 
                         // Extract data from the CS record
-                        String recordTypeID = data[1];
-                        String cardContractID = data[2];
-                        String cardContractNumber = data[3];
-                        String cardCBSNumber = data[4];
-                        String cardStatus = data[5];
-                        String comment = data[6];
-                        String statusChangeDate = data[7];
-                        String statusChangeTime = data[8];
-                        String amendmentDate = data[9];
-                        String amendmentOfficer = data[10];
+                        String recordTypeID = data.get(0);
+                        String cardContractID = data.get(1);
+                        String cardContractNumber = data.get(2);
+                        String cardCBSNumber = data.get(3);
+                        String cardStatus = data.get(4);
+                        String comment = data.get(5);
+                        String statusChangeDate = data.get(6);
+                        String statusChangeTime = data.get(7);
+                        String amendmentDate = data.get(8);
+                        String amendmentOfficer = data.get(9);
+
+                        String DropTable = "DROP TABLE IF EXISTS CSE_CS_Table";
+                        connection.createStatement().execute(DropTable);
+
+
+                        if (!tableExists(connection,"CSE_CS_Table")){
+                            String query = "CREATE TABLE CSE_CS_Table (id SERIAL PRIMARY KEY, recordTypeID VARCHAR(255), cardContractID VARCHAR(255), cardContractNumber VARCHAR(255), cardCBSNumber VARCHAR(255), cardStatus VARCHAR(255), comment VARCHAR(255), statusChangeDate VARCHAR(255), statusChangeTime TIME, amendmentDate VARCHAR(255), amendmentOfficer VARCHAR(255))";
+                            connection.createStatement().execute(query);
+                            System.out.println("Table 'CSE_CS_Table' created successfully.");
+                        }
 
                         String query = "INSERT INTO CSE_CS_Table (recordTypeID, cardContractID, cardContractNumber, cardCBSNumber, cardStatus, comment, statusChangeDate, statusChangeTime, amendmentDate, amendmentOfficer) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
@@ -361,31 +465,42 @@ public class TSVReader {
 
                     }
                     case "AD" -> {
-                        if (data.length != 19) {
-                            // Handle the error, skip the line, or throw an exception
-                            continue;
-                        }
+//                        if (data.length != 19) {
+//                            // Handle the error, skip the line, or throw an exception
+//                            continue;
+//                        }
 
                         // Extract data from the AD record
-                        String recordTypeID = data[1];
-                        String contractID = data[2];
-                        String contractNumber = data[3];
-                        String contractCBSNumber = data[4];
-                        String clientID = data[5];
-                        String clientNumber = data[6];
-                        String addressType = data[7];
-                        String firstName = data[8];
-                        String lastName = data[9];
-                        String email = data[10];
-                        String addressLine1 = data[11];
-                        String addressLine2 = data[12];
-                        String addressLine3 = data[13];
-                        String addressLine4 = data[14];
-                        String postalCode = data[15];
-                        String city = data[16];
-                        String state = data[17];
-                        String country = data[18];
-                        String status = data[19];
+                        String recordTypeID = data.get(0);
+                        String contractID = data.get(1);
+                        String contractNumber = data.get(2);
+                        String contractCBSNumber = data.get(3);
+                        String clientID = data.get(4);
+                        String clientNumber = data.get(5);
+                        String addressType = data.get(6);
+                        String firstName = data.get(7);
+                        String lastName = data.get(8);
+                        String email = data.get(9);
+                        String addressLine1 = data.get(10);
+                        String addressLine2 = data.get(11);
+                        String addressLine3 = data.get(12);
+                        String addressLine4 = data.get(13);
+                        String postalCode = data.get(14);
+                        String city = data.get(15);
+                        String state = data.get(16);
+                        String country = data.get(17);
+                        String status = data.get(18);
+
+                        String DropTable = "DROP TABLE IF EXISTS CSE_AD_Table";
+                        connection.createStatement().execute(DropTable);
+
+
+
+                        if (!tableExists(connection,"CSE_AD_Table")){
+                            String query = "CREATE TABLE CSE_AD_Table (id SERIAL PRIMARY KEY, recordTypeID VARCHAR(255), contractID VARCHAR(255), contractNumber VARCHAR(255), contractCBSNumber VARCHAR(255), clientID VARCHAR(255), clientNumber VARCHAR(255), addressType VARCHAR(255), firstName VARCHAR(255), lastName VARCHAR(255), email VARCHAR(20), addressLine1 VARCHAR(20), addressLine2 VARCHAR(20), addressLine3 VARCHAR(20), addressLine4 VARCHAR(20), postalCode VARCHAR(20), city VARCHAR(20), state VARCHAR(20), country VARCHAR(20), status VARCHAR(20))";
+                            connection.createStatement().execute(query);
+                            System.out.println("Table 'CSE_AD_Table' created successfully.");
+                        }
 
                         String query = "INSERT INTO CSE_AD_Table (recordTypeID, contractID, contractNumber, contractCBSNumber, clientID, clientNumber, addressType, firstName, lastName, email, addressLine1, addressLine2, addressLine3, addressLine4, postalCode, city, state, country, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
@@ -416,25 +531,36 @@ public class TSVReader {
                     }
                     case "LM" -> {
 
-                        if (data.length != 13) {
-                            // Handle the error, skip the line, or throw an exception
-                            continue;
-                        }
+//                        if (data.length != 15) {
+//                            // Handle the error, skip the line, or throw an exception
+//                            continue;
+//                        }
 
                         // Extract data from the LM record
-                        String recordTypeID = data[1];
-                        String contractID = data[2];
-                        String contractNumber = data[3];
-                        String contractCBSNumber = data[4];
-                        String usageLimitCode = data[5];
-                        int maxNumber = Integer.parseInt(data[6]);
-                        double maxAmount = Double.parseDouble(data[7]);
-                        double maxSingleAmount = Double.parseDouble(data[8]);
-                        String currencyCode = data[9];
-                        String activityPeriodDateFrom = data[10];
-                        String activityPeriodDateTo = data[11];
-                        int usedNumber = Integer.parseInt(data[12]);
-                        double usedAmount = Double.parseDouble(data[13]);
+                        String recordTypeID = data.get(0);
+                        String contractID = data.get(1);
+                        String contractNumber = data.get(2);
+                        String contractCBSNumber = data.get(3);
+                        String usageLimitCode = data.get(4);
+                        String maxNumber = data.get(5);
+                        String maxAmount = data.get(6);
+                        String maxSingleAmount = data.get(7);
+                        String currencyCode = data.get(8);
+                        String activityPeriodDateFrom = data.get(9);
+                        String activityPeriodDateTo = data.get(10);
+                        String usedNumber = data.get(11);
+                        String usedAmount = data.get(12);
+
+                        String DropTable = "DROP TABLE IF EXISTS CSE_LM_Table";
+                        connection.createStatement().execute(DropTable);
+
+
+
+                        if (!tableExists(connection,"CSE_LM_Table")){
+                            String query = "CREATE TABLE CSE_LM_Table (id SERIAL PRIMARY KEY, recordTypeID VARCHAR(255), contractID VARCHAR(255), contractNumber VARCHAR(255), contractCBSNumber VARCHAR(255), usageLimitCode VARCHAR(255), maxNumber VARCHAR(255), maxAmount VARCHAR(255), maxSingleAmount VARCHAR(255), currencyCode VARCHAR(3), activityPeriodDateFrom VARCHAR(255), activityPeriodDateTo VARCHAR(255), usedNumber VARCHAR(255), usedAmount VARCHAR(255))";
+                            connection.createStatement().execute(query);
+                            System.out.println("Table 'CSE_LM_Table' created successfully.");
+                        }
 
                         String query = "INSERT INTO CSE_LM_Table (recordTypeID, contractID, contractNumber, contractCBSNumber, usageLimitCode, maxNumber, maxAmount, maxSingleAmount, currencyCode, activityPeriodDateFrom, activityPeriodDateTo, usedNumber, usedAmount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
@@ -444,24 +570,23 @@ public class TSVReader {
                             preparedStatement.setString(3, contractNumber);
                             preparedStatement.setString(4, contractCBSNumber);
                             preparedStatement.setString(5, usageLimitCode);
-                            preparedStatement.setInt(6, maxNumber);
-                            preparedStatement.setDouble(7, maxAmount);
-                            preparedStatement.setDouble(8, maxSingleAmount);
+                            preparedStatement.setString(6, maxNumber);
+                            preparedStatement.setString(7, maxAmount);
+                            preparedStatement.setString(8, maxSingleAmount);
                             preparedStatement.setString(9, currencyCode);
                             preparedStatement.setString(10, activityPeriodDateFrom);
                             preparedStatement.setString(11, activityPeriodDateTo);
-                            preparedStatement.setInt(12, usedNumber);
-                            preparedStatement.setDouble(13, usedAmount);
+                            preparedStatement.setString(12, usedNumber);
+                            preparedStatement.setString(13, usedAmount);
                             preparedStatement.executeUpdate();
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
                     }
-                    default -> {
-                        System.out.println("The record type is not supported");
-                    }
+                    default -> System.out.println("The record type is not supported");
                 }
             }
+            System.out.println("Data inserted successfully");
         } catch (Exception e){
             e.printStackTrace();
         }
