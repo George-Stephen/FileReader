@@ -52,6 +52,7 @@ public class TSVReader {
                             preparedStatement.executeUpdate();
                         } catch (Exception e) {
                             e.printStackTrace();
+                            break;
                         }
 
                     case "FT":
@@ -271,6 +272,7 @@ public class TSVReader {
                             preparedStatement.executeUpdate();
                         } catch (Exception e) {
                             e.printStackTrace();
+                            break;
                         }
                 case "AC":
                         recordTypeID = data.get(0);
@@ -330,6 +332,7 @@ public class TSVReader {
                             preparedStatement.executeUpdate();
                         } catch (Exception e) {
                             e.printStackTrace();
+                            break;
                         }
 
 
@@ -409,6 +412,7 @@ public class TSVReader {
                             preparedStatement.executeUpdate();
                         } catch (Exception e) {
                             e.printStackTrace();
+                            break;
                         }
 
                 case "CS":
@@ -450,6 +454,7 @@ public class TSVReader {
                             preparedStatement.executeUpdate();
                         } catch (Exception e) {
                             e.printStackTrace();
+                            break;
                         }
                 case "AD":
 
@@ -508,6 +513,7 @@ public class TSVReader {
                             preparedStatement.executeUpdate();
                         } catch (Exception e) {
                             e.printStackTrace();
+                            break;
                         }
                     case "LM" :
 
@@ -557,6 +563,7 @@ public class TSVReader {
                             preparedStatement.executeUpdate();
                         } catch (Exception e) {
                             e.printStackTrace();
+                            break;
                         }
 
                     default: System.out.println("The record type is not supported");
