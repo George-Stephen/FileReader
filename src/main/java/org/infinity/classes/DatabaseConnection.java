@@ -24,7 +24,7 @@ public class DatabaseConnection {
             resultSet.next();
 
             // Return true if the table exists, false otherwise
-            return resultSet.getBoolean(1);
+            return !resultSet.getBoolean(1);
         }
     }
 }

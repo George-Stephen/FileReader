@@ -23,7 +23,7 @@ public class TSVReader {
 
               List<String> data  = List.of(line.split("\t"));
                 switch (data.get(0)) {
-                    case "FH" -> {
+                    case "FH":
 
                         String recordTypeID = data.get(0);
                         String bankIdentifier = data.get(1);
@@ -35,7 +35,7 @@ public class TSVReader {
 
 
 
-                        if (!tableExists(connection,"CSE_FH_Table")){
+                        if (tableExists(connection, "CSE_FH_Table")){
                             String query = "CREATE TABLE CSE_FH_Table (id SERIAL PRIMARY KEY, recordTypeID VARCHAR(255), bankIdentifier VARCHAR(255), fileSequentialNumber VARCHAR(255), fileCreationDate VARCHAR(255))";
                             connection.createStatement().execute(query);
                             System.out.println("Table 'CSE_FH_Table' created successfully.");
@@ -54,28 +54,25 @@ public class TSVReader {
                             e.printStackTrace();
                         }
 
-                    }
-                    case "FT" -> {
-
-
-                        String recordTypeID = data.get(0);
-                        String bankIdentifier = data.get(1);
-                        String fileSequentialNumber = data.get(2);
-                        String fileCreationDateStr = data.get(3);
+                    case "FT":
+                        recordTypeID = data.get(0);
+                        bankIdentifier = data.get(1);
+                        fileSequentialNumber = data.get(2);
+                        fileCreationDateStr = data.get(3);
                         String recordsCounter = data.get(4);
 
-                        String DropTable = "DROP TABLE IF EXISTS CSE_FT_Table";
+                        DropTable = "DROP TABLE IF EXISTS CSE_FT_Table";
                         connection.createStatement().execute(DropTable);
 
 
-                        if (!tableExists(connection,"CSE_FT_Table")){
-                            String query = "CREATE TABLE CSE_FT_Table (id SERIAL PRIMARY KEY, recordTypeID VARCHAR(255), bankIdentifier VARCHAR(255), fileSequentialNumber VARCHAR(255), fileCreationDate VARCHAR(255), recordsCounter VARCHAR(255))";
+                        if (tableExists(connection, "CSE_FT_Table")){
+                            query = "CREATE TABLE CSE_FT_Table (id SERIAL PRIMARY KEY, recordTypeID VARCHAR(255), bankIdentifier VARCHAR(255), fileSequentialNumber VARCHAR(255), fileCreationDate VARCHAR(255), recordsCounter VARCHAR(255))";
                             connection.createStatement().execute(query);
                             System.out.println("Table 'CSE_FT_Table' created successfully.");
 
                         }
 
-                        String query = "INSERT INTO CSE_FT_Table (recordTypeID, bankIdentifier, fileSequentialNumber, fileCreationDate, recordsCounter) VALUES (?, ?, ?, ?, ?)";
+                        query = "INSERT INTO CSE_FT_Table (recordTypeID, bankIdentifier, fileSequentialNumber, fileCreationDate, recordsCounter) VALUES (?, ?, ?, ?, ?)";
                         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                             preparedStatement.setString(1, recordTypeID);
                             preparedStatement.setString(2, bankIdentifier);
@@ -89,13 +86,13 @@ public class TSVReader {
                         }
 
 
-                    }
-                    case "CL" -> {
+
+                case "CL" :
                         if (data.size() != 60) {
                             // Handle the error, skip the line, or throw an exception
                             continue;
                         }
-                        String recordTypeID = data.get(0);
+                        recordTypeID = data.get(0);
                         String clientID = data.get(1);
                         String clientNumber = data.get(2);
                         String orderDepartment = data.get(3);
@@ -146,12 +143,12 @@ public class TSVReader {
                         String amendmentDate = data.get(48);
                         String amendmentOfficer = data.get(49);
 
-                        String DropTable = "DROP TABLE IF EXISTS CSE_CL_Table";
+                        DropTable = "DROP TABLE IF EXISTS CSE_CL_Table";
                         connection.createStatement().execute(DropTable);
 
 
-                        if (!tableExists(connection,"CSE_CL_Table")){
-                            String query = "CREATE TABLE IF NOT EXISTS CSE_CL_Table (" +
+                        if (tableExists(connection, "CSE_CL_Table")){
+                            query = "CREATE TABLE IF NOT EXISTS CSE_CL_Table (" +
                                     "recordTypeID VARCHAR(2) NOT NULL," +
                                     "clientID VARCHAR(32)," +
                                     "clientNumber VARCHAR(32) NOT NULL," +
@@ -211,7 +208,7 @@ public class TSVReader {
                             System.out.println("Table 'ATRTable' already exists.");
                         }
 
-                        String query = "INSERT INTO CSE_CL_Table (recordTypeID, clientID, clientNumber, orderDepartment, clientType, serviceGroup," +
+                        query = "INSERT INTO CSE_CL_Table (recordTypeID, clientID, clientNumber, orderDepartment, clientType, serviceGroup," +
                                 " identificationDocumentNumber, identificationDocumentType, identificationDocumentDetails, socialNumber," +
                                 " taxpayerIdentifier, taxPosition, shortName, title, firstName, lastName, middleName, secretPhrase, suffix," +
                                 " countryCode, citizenship, language, maritalStatus, birthDate, birthPlace, birthName, gender," +
@@ -275,10 +272,8 @@ public class TSVReader {
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
-
-                    }
-                    case "AC" -> {
-                        String recordTypeID = data.get(0);
+                case "AC":
+                        recordTypeID = data.get(0);
                         String accountContractID = data.get(1);
                         String accountContractNumber = data.get(2);
                         String accountCBSNumber = data.get(3);
@@ -296,21 +291,21 @@ public class TSVReader {
                         String accountStatus = data.get(15);
                         String accountBalances = data.get(16);
                         String accountClassifiers = data.get(17);
-                        String amendmentDate = data.get(19);
-                        String amendmentOfficer = data.get(19);
+                        amendmentDate = data.get(19);
+                        amendmentOfficer = data.get(19);
 
-                        String DropTable = "DROP TABLE IF EXISTS CSE_AC_Table";
+                        DropTable = "DROP TABLE IF EXISTS CSE_AC_Table";
                         connection.createStatement().execute(DropTable);
 
-                        if (!tableExists(connection,"CSE_AC_Table")) {
-                            String query = "CREATE TABLE CSE_AC_Table (id SERIAL PRIMARY KEY, recordTypeID VARCHAR(255), accountContractID VARCHAR(255), accountContractNumber VARCHAR(255), accountCBSNumber VARCHAR(255), parentAccountContractID VARCHAR(255), parentAccountContractNumber VARCHAR(255), parentAccountCBSNumber VARCHAR(255), accountOwnerClientID VARCHAR(255), accountOwnerClientNumber VARCHAR(255), contractName VARCHAR(50), dateOpen VARCHAR(255), dateExpiry VARCHAR(255), currency VARCHAR(255), productCode VARCHAR(255), contractSubtypeCode VARCHAR(255), accountStatus VARCHAR(255), accountBalances VARCHAR(255), accountClassifiers VARCHAR(255), amendmentDate VARCHAR(255), amendmentOfficer VARCHAR(255))";
+                        if (tableExists(connection, "CSE_AC_Table")) {
+                            query = "CREATE TABLE CSE_AC_Table (id SERIAL PRIMARY KEY, recordTypeID VARCHAR(255), accountContractID VARCHAR(255), accountContractNumber VARCHAR(255), accountCBSNumber VARCHAR(255), parentAccountContractID VARCHAR(255), parentAccountContractNumber VARCHAR(255), parentAccountCBSNumber VARCHAR(255), accountOwnerClientID VARCHAR(255), accountOwnerClientNumber VARCHAR(255), contractName VARCHAR(50), dateOpen VARCHAR(255), dateExpiry VARCHAR(255), currency VARCHAR(255), productCode VARCHAR(255), contractSubtypeCode VARCHAR(255), accountStatus VARCHAR(255), accountBalances VARCHAR(255), accountClassifiers VARCHAR(255), amendmentDate VARCHAR(255), amendmentOfficer VARCHAR(255))";
                             connection.createStatement().execute(query);
                             System.out.println("Table 'CSE_AC_Table' created successfully.");
                         }else{
                             System.out.println("Table 'ATRTable' already exists.");
                         }
 
-                        String query = "INSERT INTO CSE_AC_Table (recordTypeID, accountContractID, accountContractNumber, accountCBSNumber, parentAccountContractID, parentAccountContractNumber, parentAccountCBSNumber, accountOwnerClientID, accountOwnerClientNumber, contractName, dateOpen, dateExpiry, currency, productCode, contractSubtypeCode, accountStatus, accountBalances, accountClassifiers, amendmentDate, amendmentOfficer) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                        query = "INSERT INTO CSE_AC_Table (recordTypeID, accountContractID, accountContractNumber, accountCBSNumber, parentAccountContractID, parentAccountContractNumber, parentAccountCBSNumber, accountOwnerClientID, accountOwnerClientNumber, contractName, dateOpen, dateExpiry, currency, productCode, contractSubtypeCode, accountStatus, accountBalances, accountClassifiers, amendmentDate, amendmentOfficer) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                             preparedStatement.setString(1, recordTypeID);
                             preparedStatement.setString(2, accountContractID);
@@ -338,45 +333,45 @@ public class TSVReader {
                         }
 
 
-                    }
-                    case "CR" -> {
+
+                case "CR":
 
 //                        if (data.length != 26) {
 //                            // Handle the error, skip the line, or throw an exception
 //                            continue;
 //                        }
                         // Extract data from the CR record
-                        String recordTypeID = data.get(0);
+                        recordTypeID = data.get(0);
                         String cardContractID = data.get(1);
                         String cardContractNumber = data.get(2);
                         String cardCBSNumber = data.get(3);
-                        String accountContractID = data.get(4);
-                        String accountContractNumber = data.get(5);
-                        String accountCBSNumber = data.get(6);
+                        accountContractID = data.get(4);
+                        accountContractNumber = data.get(5);
+                        accountCBSNumber = data.get(6);
                         String cardholderClientID = data.get(7);
                         String cardholderClientNumber = data.get(8);
-                        String accountOwnerClientID = data.get(9);
-                        String accountOwnerClientNumber = data.get(10);
-                        String contractName = data.get(11);
-                        String dateOpen = data.get(12);
+                        accountOwnerClientID = data.get(9);
+                        accountOwnerClientNumber = data.get(10);
+                        contractName = data.get(11);
+                        dateOpen = data.get(12);
                         String cardExpiryDate = data.get(13);
-                        String currency = data.get(14);
-                        String productCode = data.get(15);
-                        String contractSubtypeCode = data.get(16);
+                        currency = data.get(14);
+                        productCode = data.get(15);
+                        contractSubtypeCode = data.get(16);
                         String cardStatus = data.get(17);
                         String productionCode = data.get(18);
-                        String embossedTitle = data.get(19);
-                        String embossedFirstName = data.get(20);
-                        String embossedLastName = data.get(21);
-                        String embossedCompanyName = data.get(22);
-                        String amendmentDate = data.get(23);
-                        String amendmentOfficer = data.get(24);
+                        embossedTitle = data.get(19);
+                        embossedFirstName = data.get(20);
+                        embossedLastName = data.get(21);
+                        embossedCompanyName = data.get(22);
+                        amendmentDate = data.get(23);
+                        amendmentOfficer = data.get(24);
 
-                        String DropTable = "DROP TABLE IF EXISTS CSE_CR_Table";
+                        DropTable = "DROP TABLE IF EXISTS CSE_CR_Table";
                         connection.createStatement().execute(DropTable);
 
-                        if (!tableExists(connection,"CSE_CR_Table")){
-                            String query = "CREATE TABLE CSE_CR_Table (id SERIAL PRIMARY KEY, recordTypeID VARCHAR(255), cardContractID VARCHAR(255), cardContractNumber VARCHAR(255), cardCBSNumber VARCHAR(255), accountContractID VARCHAR(255), accountContractNumber VARCHAR(255), accountCBSNumber VARCHAR(255), cardholderClientID VARCHAR(255), cardholderClientNumber VARCHAR(255), accountOwnerClientID VARCHAR(255), accountOwnerClientNumber VARCHAR(255), contractName VARCHAR(255), dateOpen VARCHAR(255), cardExpiryDate VARCHAR(255), currency VARCHAR(255), productCode VARCHAR(255), contractSubtypeCode VARCHAR(255), cardStatus VARCHAR(255), productionCode VARCHAR(255), embossedTitle VARCHAR(255), embossedFirstName VARCHAR(255), embossedLastName VARCHAR(255), embossedCompanyName VARCHAR(255), amendmentDate VARCHAR(255), amendmentOfficer VARCHAR(255))";
+                        if (tableExists(connection, "CSE_CR_Table")){
+                            query = "CREATE TABLE CSE_CR_Table (id SERIAL PRIMARY KEY, recordTypeID VARCHAR(255), cardContractID VARCHAR(255), cardContractNumber VARCHAR(255), cardCBSNumber VARCHAR(255), accountContractID VARCHAR(255), accountContractNumber VARCHAR(255), accountCBSNumber VARCHAR(255), cardholderClientID VARCHAR(255), cardholderClientNumber VARCHAR(255), accountOwnerClientID VARCHAR(255), accountOwnerClientNumber VARCHAR(255), contractName VARCHAR(255), dateOpen VARCHAR(255), cardExpiryDate VARCHAR(255), currency VARCHAR(255), productCode VARCHAR(255), contractSubtypeCode VARCHAR(255), cardStatus VARCHAR(255), productionCode VARCHAR(255), embossedTitle VARCHAR(255), embossedFirstName VARCHAR(255), embossedLastName VARCHAR(255), embossedCompanyName VARCHAR(255), amendmentDate VARCHAR(255), amendmentOfficer VARCHAR(255))";
                             connection.createStatement().execute(query);
                             System.out.println("Table 'CSE_CR_Table' created successfully.");
                         }else{
@@ -384,7 +379,7 @@ public class TSVReader {
                         }
 
 
-                        String query = "INSERT INTO CSE_CR_Table (recordTypeID, cardContractID, cardContractNumber, cardCBSNumber, accountContractID, accountContractNumber, accountCBSNumber, cardholderClientID, cardholderClientNumber, accountOwnerClientID, accountOwnerClientNumber, contractName, dateOpen, cardExpiryDate, currency, productCode, contractSubtypeCode, cardStatus, productionCode, embossedTitle, embossedFirstName, embossedLastName, embossedCompanyName, amendmentDate, amendmentOfficer) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                        query = "INSERT INTO CSE_CR_Table (recordTypeID, cardContractID, cardContractNumber, cardCBSNumber, accountContractID, accountContractNumber, accountCBSNumber, cardholderClientID, cardholderClientNumber, accountOwnerClientID, accountOwnerClientNumber, contractName, dateOpen, cardExpiryDate, currency, productCode, contractSubtypeCode, cardStatus, productionCode, embossedTitle, embossedFirstName, embossedLastName, embossedCompanyName, amendmentDate, amendmentOfficer) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                             preparedStatement.setString(1, recordTypeID);
                             preparedStatement.setString(2, cardContractID);
@@ -416,37 +411,31 @@ public class TSVReader {
                             e.printStackTrace();
                         }
 
-                    }
-                    case "CS" -> {
-
-//                        if (data.length != 10) {
-//                            // Handle the error, skip the line, or throw an exception
-//                            continue;
-//                        }
+                case "CS":
 
                         // Extract data from the CS record
-                        String recordTypeID = data.get(0);
-                        String cardContractID = data.get(1);
-                        String cardContractNumber = data.get(2);
-                        String cardCBSNumber = data.get(3);
-                        String cardStatus = data.get(4);
+                        recordTypeID = data.get(0);
+                        cardContractID = data.get(1);
+                        cardContractNumber = data.get(2);
+                        cardCBSNumber = data.get(3);
+                        cardStatus = data.get(4);
                         String comment = data.get(5);
                         String statusChangeDate = data.get(6);
                         String statusChangeTime = data.get(7);
-                        String amendmentDate = data.get(8);
-                        String amendmentOfficer = data.get(9);
+                        amendmentDate = data.get(8);
+                        amendmentOfficer = data.get(9);
 
-                        String DropTable = "DROP TABLE IF EXISTS CSE_CS_Table";
+                        DropTable = "DROP TABLE IF EXISTS CSE_CS_Table";
                         connection.createStatement().execute(DropTable);
 
 
-                        if (!tableExists(connection,"CSE_CS_Table")){
-                            String query = "CREATE TABLE CSE_CS_Table (id SERIAL PRIMARY KEY, recordTypeID VARCHAR(255), cardContractID VARCHAR(255), cardContractNumber VARCHAR(255), cardCBSNumber VARCHAR(255), cardStatus VARCHAR(255), comment VARCHAR(255), statusChangeDate VARCHAR(255), statusChangeTime TIME, amendmentDate VARCHAR(255), amendmentOfficer VARCHAR(255))";
+                        if (tableExists(connection, "CSE_CS_Table")){
+                            query = "CREATE TABLE CSE_CS_Table (id SERIAL PRIMARY KEY, recordTypeID VARCHAR(255), cardContractID VARCHAR(255), cardContractNumber VARCHAR(255), cardCBSNumber VARCHAR(255), cardStatus VARCHAR(255), comment VARCHAR(255), statusChangeDate VARCHAR(255), statusChangeTime TIME, amendmentDate VARCHAR(255), amendmentOfficer VARCHAR(255))";
                             connection.createStatement().execute(query);
                             System.out.println("Table 'CSE_CS_Table' created successfully.");
                         }
 
-                        String query = "INSERT INTO CSE_CS_Table (recordTypeID, cardContractID, cardContractNumber, cardCBSNumber, cardStatus, comment, statusChangeDate, statusChangeTime, amendmentDate, amendmentOfficer) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                        query = "INSERT INTO CSE_CS_Table (recordTypeID, cardContractID, cardContractNumber, cardCBSNumber, cardStatus, comment, statusChangeDate, statusChangeTime, amendmentDate, amendmentOfficer) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                             preparedStatement.setString(1, recordTypeID);
                             preparedStatement.setString(2, cardContractID);
@@ -462,47 +451,40 @@ public class TSVReader {
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
+                case "AD":
 
-                    }
-                    case "AD" -> {
-//                        if (data.length != 19) {
-//                            // Handle the error, skip the line, or throw an exception
-//                            continue;
-//                        }
-
-                        // Extract data from the AD record
-                        String recordTypeID = data.get(0);
+                        recordTypeID = data.get(0);
                         String contractID = data.get(1);
                         String contractNumber = data.get(2);
                         String contractCBSNumber = data.get(3);
-                        String clientID = data.get(4);
-                        String clientNumber = data.get(5);
+                        clientID = data.get(4);
+                        clientNumber = data.get(5);
                         String addressType = data.get(6);
-                        String firstName = data.get(7);
-                        String lastName = data.get(8);
-                        String email = data.get(9);
-                        String addressLine1 = data.get(10);
-                        String addressLine2 = data.get(11);
-                        String addressLine3 = data.get(12);
-                        String addressLine4 = data.get(13);
-                        String postalCode = data.get(14);
-                        String city = data.get(15);
-                        String state = data.get(16);
+                        firstName = data.get(7);
+                        lastName = data.get(8);
+                        email = data.get(9);
+                        addressLine1 = data.get(10);
+                        addressLine2 = data.get(11);
+                        addressLine3 = data.get(12);
+                        addressLine4 = data.get(13);
+                        postalCode = data.get(14);
+                        city = data.get(15);
+                        state = data.get(16);
                         String country = data.get(17);
                         String status = data.get(18);
 
-                        String DropTable = "DROP TABLE IF EXISTS CSE_AD_Table";
+                        DropTable = "DROP TABLE IF EXISTS CSE_AD_Table";
                         connection.createStatement().execute(DropTable);
 
 
 
-                        if (!tableExists(connection,"CSE_AD_Table")){
-                            String query = "CREATE TABLE CSE_AD_Table (id SERIAL PRIMARY KEY, recordTypeID VARCHAR(255), contractID VARCHAR(255), contractNumber VARCHAR(255), contractCBSNumber VARCHAR(255), clientID VARCHAR(255), clientNumber VARCHAR(255), addressType VARCHAR(255), firstName VARCHAR(255), lastName VARCHAR(255), email VARCHAR(20), addressLine1 VARCHAR(20), addressLine2 VARCHAR(20), addressLine3 VARCHAR(20), addressLine4 VARCHAR(20), postalCode VARCHAR(20), city VARCHAR(20), state VARCHAR(20), country VARCHAR(20), status VARCHAR(20))";
+                        if (tableExists(connection, "CSE_AD_Table")){
+                            query = "CREATE TABLE CSE_AD_Table (id SERIAL PRIMARY KEY, recordTypeID VARCHAR(255), contractID VARCHAR(255), contractNumber VARCHAR(255), contractCBSNumber VARCHAR(255), clientID VARCHAR(255), clientNumber VARCHAR(255), addressType VARCHAR(255), firstName VARCHAR(255), lastName VARCHAR(255), email VARCHAR(20), addressLine1 VARCHAR(20), addressLine2 VARCHAR(20), addressLine3 VARCHAR(20), addressLine4 VARCHAR(20), postalCode VARCHAR(20), city VARCHAR(20), state VARCHAR(20), country VARCHAR(20), status VARCHAR(20))";
                             connection.createStatement().execute(query);
                             System.out.println("Table 'CSE_AD_Table' created successfully.");
                         }
 
-                        String query = "INSERT INTO CSE_AD_Table (recordTypeID, contractID, contractNumber, contractCBSNumber, clientID, clientNumber, addressType, firstName, lastName, email, addressLine1, addressLine2, addressLine3, addressLine4, postalCode, city, state, country, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                        query = "INSERT INTO CSE_AD_Table (recordTypeID, contractID, contractNumber, contractCBSNumber, clientID, clientNumber, addressType, firstName, lastName, email, addressLine1, addressLine2, addressLine3, addressLine4, postalCode, city, state, country, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                             preparedStatement.setString(1, recordTypeID);
                             preparedStatement.setString(2, contractID);
@@ -527,20 +509,14 @@ public class TSVReader {
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
+                    case "LM" :
 
-                    }
-                    case "LM" -> {
-
-//                        if (data.length != 15) {
-//                            // Handle the error, skip the line, or throw an exception
-//                            continue;
-//                        }
 
                         // Extract data from the LM record
-                        String recordTypeID = data.get(0);
-                        String contractID = data.get(1);
-                        String contractNumber = data.get(2);
-                        String contractCBSNumber = data.get(3);
+                        recordTypeID = data.get(0);
+                        contractID = data.get(1);
+                        contractNumber = data.get(2);
+                        contractCBSNumber = data.get(3);
                         String usageLimitCode = data.get(4);
                         String maxNumber = data.get(5);
                         String maxAmount = data.get(6);
@@ -551,18 +527,18 @@ public class TSVReader {
                         String usedNumber = data.get(11);
                         String usedAmount = data.get(12);
 
-                        String DropTable = "DROP TABLE IF EXISTS CSE_LM_Table";
+                        DropTable = "DROP TABLE IF EXISTS CSE_LM_Table";
                         connection.createStatement().execute(DropTable);
 
 
 
-                        if (!tableExists(connection,"CSE_LM_Table")){
-                            String query = "CREATE TABLE CSE_LM_Table (id SERIAL PRIMARY KEY, recordTypeID VARCHAR(255), contractID VARCHAR(255), contractNumber VARCHAR(255), contractCBSNumber VARCHAR(255), usageLimitCode VARCHAR(255), maxNumber VARCHAR(255), maxAmount VARCHAR(255), maxSingleAmount VARCHAR(255), currencyCode VARCHAR(3), activityPeriodDateFrom VARCHAR(255), activityPeriodDateTo VARCHAR(255), usedNumber VARCHAR(255), usedAmount VARCHAR(255))";
+                        if (tableExists(connection, "CSE_LM_Table")){
+                            query = "CREATE TABLE CSE_LM_Table (id SERIAL PRIMARY KEY, recordTypeID VARCHAR(255), contractID VARCHAR(255), contractNumber VARCHAR(255), contractCBSNumber VARCHAR(255), usageLimitCode VARCHAR(255), maxNumber VARCHAR(255), maxAmount VARCHAR(255), maxSingleAmount VARCHAR(255), currencyCode VARCHAR(3), activityPeriodDateFrom VARCHAR(255), activityPeriodDateTo VARCHAR(255), usedNumber VARCHAR(255), usedAmount VARCHAR(255))";
                             connection.createStatement().execute(query);
                             System.out.println("Table 'CSE_LM_Table' created successfully.");
                         }
 
-                        String query = "INSERT INTO CSE_LM_Table (recordTypeID, contractID, contractNumber, contractCBSNumber, usageLimitCode, maxNumber, maxAmount, maxSingleAmount, currencyCode, activityPeriodDateFrom, activityPeriodDateTo, usedNumber, usedAmount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                        query = "INSERT INTO CSE_LM_Table (recordTypeID, contractID, contractNumber, contractCBSNumber, usageLimitCode, maxNumber, maxAmount, maxSingleAmount, currencyCode, activityPeriodDateFrom, activityPeriodDateTo, usedNumber, usedAmount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
                         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                             preparedStatement.setString(1, recordTypeID);
@@ -582,8 +558,8 @@ public class TSVReader {
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
-                    }
-                    default -> System.out.println("The record type is not supported");
+
+                    default: System.out.println("The record type is not supported");
                 }
             }
             System.out.println("Data inserted successfully");

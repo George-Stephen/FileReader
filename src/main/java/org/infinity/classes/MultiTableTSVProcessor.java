@@ -7,12 +7,10 @@ package com.technote.utils;
 
 import org.infinity.classes.DatabaseConnection;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
 
 /**
  *
@@ -20,7 +18,7 @@ import java.util.Map;
  */
 public class MultiTableTSVProcessor {
 
-    String[] clearingTotalsColumns = {
+    final String[] clearingTotalsColumns = {
         "recordTypeID",
         "transactionCode",
         "transactionTypeCode",
@@ -60,7 +58,7 @@ public class MultiTableTSVProcessor {
         "IPMfileID"
     };
 
-    String[] feeCollectionsColumns = {
+    final String[] feeCollectionsColumns = {
         "recordTypeID",
         "transactionCode",
         "transactionTypeCode",
@@ -92,7 +90,7 @@ public class MultiTableTSVProcessor {
         "additionalInformation"
     };
 
-    String[] cbColumnNames = {
+    final String[] cbColumnNames = {
         "recordTypeID",
         "transactionDate",
         "transactionCode",
@@ -140,7 +138,7 @@ public class MultiTableTSVProcessor {
         "additionalInformation"
     };
 
-    String[] itColumnNames = {
+    final String[] itColumnNames = {
         "recordTypeID",
         "transactionCode",
         "transactionTypeCode",
@@ -159,7 +157,7 @@ public class MultiTableTSVProcessor {
         "cmsInterestDetails"
     };
 
-    String[] spColumnNames = {
+    final String[] spColumnNames = {
         "recordTypeID",
         "transactionDate",
         "transactionCode",
@@ -187,7 +185,7 @@ public class MultiTableTSVProcessor {
         "additionalInformation"
     };
 
-    String[] mfColumnNames = {
+    final String[] mfColumnNames = {
         "recordTypeID",
         "transactionDate",
         "transactionCode",
@@ -211,7 +209,7 @@ public class MultiTableTSVProcessor {
         "additionalInformation"
     };
 
-    String[] mtColumnNames = {
+    final String[] mtColumnNames = {
         "recordTypeID",
         "transactionDate",
         "transactionCode",
@@ -235,7 +233,7 @@ public class MultiTableTSVProcessor {
         "additionalInformation"
     };
 
-    String[] transactionFromSchemeColumnNames = {
+    final String[] transactionFromSchemeColumnNames = {
         "recordTypeID",
         "transactionDate",
         "transactionCode",
@@ -318,14 +316,14 @@ public class MultiTableTSVProcessor {
         "IPMfileID"
     };
 
-    String[] fileFooterColumnNames = {
+    final String[] fileFooterColumnNames = {
         "recordTypeID",
         "bankIdentifier",
         "fileSequentialNumber",
         "fileCreationDate",
         "recordsCounter"
     };
-    String[] bankOriginTransColumnNames = {
+    final String[] bankOriginTransColumnNames = {
         "recordTypeID",
         "transactionDate",
         "transactionCode",
@@ -364,7 +362,7 @@ public class MultiTableTSVProcessor {
         "additionalInformation"
     };
 
-    String[] fileHeaderColumnNames = {
+    final String[] fileHeaderColumnNames = {
         "recordTypeID",
         "bankIdentifier",
         "fileSequentialNumber",
@@ -373,9 +371,11 @@ public class MultiTableTSVProcessor {
 
     private final Connection con;
 
-    public MultiTableTSVProcessor() throws Exception {
-        this.con = DatabaseConnection.getConnection();
-    }
+// --Commented out by Inspection START (12/03/2024 10:43):
+//    public MultiTableTSVProcessor() throws Exception {
+//        this.con = DatabaseConnection.getConnection();
+//    }
+// --Commented out by Inspection STOP (12/03/2024 10:43)
 
     private String recordtypeConverter(String recordTypeId) {
         if (recordTypeId.equals("FH")) {
