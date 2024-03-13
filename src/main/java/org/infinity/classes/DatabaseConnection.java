@@ -6,9 +6,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 public class DatabaseConnection {
-    private static final String URL = "jdbc:postgresql://192.168.1.44:5432/mp_batch_data";
+    private static final String URL = "jdbc:postgresql://localhost:5432/mp_batch_data";
     private static final String USER = "postgres";
-    private static final String PASSWORD = "12345";
+    private static final String PASSWORD = "138521";
 
     public static Connection getConnection() throws Exception{
         return DriverManager.getConnection(URL,USER,PASSWORD);
